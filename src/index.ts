@@ -12,6 +12,9 @@ type PluginConfig = {
   makefile?: string; // Default is "./Makefile"
   reloadHandler?: boolean; // Default is false
   watch?: string[]; // Default is []
+  hooks?: {
+    [key: string]: string;
+  };
 };
 
 type ServerlessCustom = {
@@ -108,6 +111,8 @@ class ServerlessMake {
   };
 
   constructor(serverless: Serverless, protected options: Options) {
+    console.log("!!! serverless", serverless);
+
     this.serverless = serverless;
     this.serverlessConfig = serverless.config;
     this.pluginConfig =
