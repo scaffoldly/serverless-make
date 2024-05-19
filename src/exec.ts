@@ -27,7 +27,11 @@ export const exec = (argv: string[], workdir: string): Promise<void> => {
       reject(err);
     });
 
-    p.on("exit", () => {
+    p.on("exit", (code) => {
+      if (code !== 0) {
+        reject(new Error(`Command ${argv[0]} exited with code ${code}`));
+        return;
+      }
       resolve();
     });
 
