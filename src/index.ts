@@ -110,6 +110,12 @@ type Hooks = {
   [key: string]: () => Promise<void>;
 };
 
+type Commands = {
+  [key: string]: {
+    lifecycleEvents?: string[];
+  };
+};
+
 class ServerlessMake {
   log: Log;
 
@@ -117,6 +123,7 @@ class ServerlessMake {
   serverlessConfig: ServerlessConfig;
   pluginConfig: PluginConfig;
 
+  commands: Commands;
   hooks?: Hooks;
 
   constructor(serverless: Serverless, protected options: Options) {
@@ -128,6 +135,10 @@ class ServerlessMake {
       {};
 
     this.log = new Log(options);
+
+    this.commands = {
+      [PLUGIN_NAME]: {},
+    };
 
     this.hooks = this.setupHooks();
   }
@@ -249,7 +260,7 @@ class ServerlessMake {
       });
     }
 
-    this.serverless.pluginManager.spawn("after:make");
+    await this.serverless.pluginManager.spawn("after:make");
   };
 }
 
