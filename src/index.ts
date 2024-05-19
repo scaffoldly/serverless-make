@@ -184,7 +184,7 @@ class ServerlessMake {
         ignoreInitial: true,
         usePolling: true,
         interval: 100,
-        atomic: 1000,
+        awaitWriteFinish: true,
       }).on("all", async () => {
         this.log.log("Change detected, rebuilding...");
         try {
