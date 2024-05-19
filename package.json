@@ -18,7 +18,9 @@
   },
   "dependencies": {
     "@types/node": "16",
-    "typescript": "5"
+    "@types/which": "3",
+    "typescript": "5",
+    "which": "4"
   },
   "peerDependencies": {
     "serverless": ">=3.0.0"

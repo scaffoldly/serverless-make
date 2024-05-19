@@ -1,9 +1,14 @@
+import "path";
 import { exit } from "process";
+import { exec } from "./exec";
+import path from "path";
 
 type PluginName = "make";
 const PLUGIN_NAME: PluginName = "make";
 
 type PluginConfig = {
+  target?: string; // Default is "", which will run "_PHONY" target
+  makefile?: string; // Default is "./Makefile"
   reloadHandler?: boolean; // Default is false
 };
 
@@ -149,7 +154,17 @@ class ServerlessMake {
   }
 
   build = async (_watch: boolean): Promise<void> => {
-    throw new Error("Method not implemented.");
+    const makefile = path.join(
+      this.serverlessConfig.servicePath,
+      this.pluginConfig.makefile || "./Makefile"
+    );
+    const workdir = path.dirname(makefile);
+    const target = this.pluginConfig.target || "";
+
+    const command = ["make", "-f", makefile, target];
+    this.log.verbose(`Running command (in ${workdir}): ${command.join(" ")}`);
+
+    await exec(command, workdir);
   };
 }
 
