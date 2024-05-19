@@ -167,6 +167,7 @@ class ServerlessMake {
 
     // TODO: pull in envrionment variables from serverless.yml
     await exec(command, workdir, this.log.verbose);
+    console.log("!!! done");
 
     if (watch) {
       const paths = [
@@ -175,6 +176,7 @@ class ServerlessMake {
           path.join(this.serverlessConfig.servicePath, p)
         ),
       ];
+
       this.log.log(
         `Watching for changes in: ${paths.map((p) => ` - ${p}`).join(`\n`)}`
       );
@@ -188,12 +190,15 @@ class ServerlessMake {
         this.log.log("Change detected, rebuilding...");
         try {
           await this.build(false);
+          console.log("!!! after chordir build");
         } catch (e) {
           if (e instanceof Error) {
             this.log.error(e.message);
           }
         }
       });
+
+      console.log("!!! after chokidar");
     }
 
     // TODO: emit an event to the serverless framework

@@ -28,17 +28,24 @@ export const exec = (
       env,
       cwd: workdir,
     });
+    console.log("!!! after spawn");
 
     p.on("error", (err) => {
+      console.log("!!! proc err");
       reject(err);
     });
 
     p.on("exit", (code) => {
+      console.log("!!! proc exit");
       if (code !== 0) {
         reject(new Error(`Command ${argv[0]} exited with code ${code}`));
         return;
       }
       resolve();
+    });
+
+    p.on("close", () => {
+      console.log("!!! proc close");
     });
 
     p.stdin.pipe(process.stdin);
