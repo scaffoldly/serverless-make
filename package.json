@@ -1,6 +1,6 @@
 {
   "name": "serverless-make",
-  "version": "1.0.1-9",
+  "version": "1.0.1-10",
   "engines": {
     "node": ">=18"
   },
