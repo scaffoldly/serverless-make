@@ -46,6 +46,9 @@ type Serverless = {
   service: ServerlessService;
   pluginManager: {
     spawn: (command: string) => Promise<void>;
+    hooks?: {
+      [key: string]: any;
+    };
   };
   config: any;
 };
@@ -79,6 +82,10 @@ class Log {
   verbose = (message: string) => {
     if (this.options.log) {
       this.options.log.verbose(Log.msg(message));
+    } else {
+      if (this.options.verbose) {
+        console.log(Log.msg(message));
+      }
     }
   };
 
@@ -99,6 +106,10 @@ class Log {
   };
 }
 
+type Hooks = {
+  [key: string]: () => Promise<void>;
+};
+
 class ServerlessMake {
   log: Log;
 
@@ -106,9 +117,7 @@ class ServerlessMake {
   serverlessConfig: ServerlessConfig;
   pluginConfig: PluginConfig;
 
-  hooks: {
-    [key: string]: () => Promise<void>;
-  };
+  hooks?: Hooks;
 
   constructor(serverless: Serverless, protected options: Options) {
     this.serverless = serverless;
@@ -120,7 +129,19 @@ class ServerlessMake {
 
     this.log = new Log(options);
 
-    this.hooks = {
+    this.hooks = this.setupHooks();
+  }
+
+  get environment(): { [key: string]: string | undefined } {
+    return {
+      ...(process.env || {}),
+      ...((((this.serverless || {}).service || {}).provider || {})
+        .environment || {}),
+    };
+  }
+
+  setupHooks = () => {
+    const hooks: Hooks = {
       initialize: async () => {},
       "before:offline:start": async () => {
         this.log.verbose("before:offline:start");
@@ -157,26 +178,22 @@ class ServerlessMake {
       },
     };
 
-    this.setupHooks();
-  }
+    const pluginHooks = this.pluginConfig.hooks || {};
 
-  get environment(): { [key: string]: string | undefined } {
-    return {
-      ...(process.env || {}),
-      ...((((this.serverless || {}).service || {}).provider || {})
-        .environment || {}),
-    };
-  }
-
-  setupHooks = () => {
-    const hooks = this.pluginConfig.hooks || {};
-
-    Object.entries(hooks).forEach(([hook, target]) => {
-      this.hooks[hook] = async () => {
-        console.log("!!! received hook", hook);
+    Object.entries(pluginHooks).forEach(([hook, target]) => {
+      if (hooks[hook]) {
+        this.log.warning(
+          `Unable to override registered internal hook "${hook}"!`
+        );
+        return;
+      }
+      hooks[hook] = async () => {
+        this.log.verbose(hook);
         await this.make(target);
       };
     });
+
+    return hooks;
   };
 
   make = async (target: string): Promise<{ makefile: string }> => {
@@ -188,7 +205,7 @@ class ServerlessMake {
 
     const command = ["make", "-f", makefile, target];
 
-    this.log.verbose(`make ${target}`);
+    this.log.log(`Making "${target}"...`);
 
     await exec(command, workdir, this.environment);
 

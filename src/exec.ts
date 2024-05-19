@@ -7,8 +7,6 @@ export const exec = (
   env: { [key: string]: string | undefined }
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
-    console.log("!!!! env", JSON.stringify(env));
-
     let command: string;
     try {
       command = which.sync(argv[0]);
