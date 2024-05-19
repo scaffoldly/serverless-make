@@ -2,7 +2,8 @@ import "path";
 import { exit } from "process";
 import { exec } from "./exec";
 import path from "path";
-import nodeWatch from "node-watch";
+import { watch as chokidar } from "chokidar";
+import { FSWatcher } from "fs";
 
 type PluginName = "make";
 const PLUGIN_NAME: PluginName = "make";
@@ -166,6 +167,7 @@ class ServerlessMake {
     const command = ["make", "-f", makefile, target];
 
     const postExec = () => {
+      // TODO Emit event for other plugins to hook into
       this.log.verbose("Makefile completed");
     };
 
@@ -180,9 +182,20 @@ class ServerlessMake {
         ),
       ];
       this.log.log(`Watching for changes in: ${paths.map((p) => ` - ${p}\n`)}`);
-      nodeWatch(paths, { recursive: true }, async () => {
+
+      chokidar(paths, {
+        ignoreInitial: true,
+        usePolling: true,
+        interval: 100,
+      }).on("all", async () => {
         this.log.log("Change detected, rebuilding...");
-        await exec(command, workdir, this.log.verbose, postExec);
+        try {
+          await this.build(false);
+        } catch (e) {
+          if (e instanceof Error) {
+            this.log.error(e.message);
+          }
+        }
       });
     }
   };
