@@ -248,6 +248,8 @@ class ServerlessMake {
         }
       });
     }
+
+    this.serverless.pluginManager.spawn("after:make");
   };
 }
 
