@@ -184,7 +184,10 @@ class ServerlessMake {
         ignoreInitial: true,
         usePolling: true,
         interval: 100,
-        awaitWriteFinish: true,
+        awaitWriteFinish: {
+          stabilityThreshold: 500,
+          pollInterval: 100,
+        },
       }).on("all", async () => {
         this.log.log("Change detected, rebuilding...");
         try {
