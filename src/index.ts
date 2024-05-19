@@ -180,7 +180,9 @@ class ServerlessMake {
           path.join(this.serverlessConfig.servicePath, p)
         ),
       ];
-      this.log.log(`Watching for changes in: ${paths.map((p) => ` - ${p}\n`)}`);
+      this.log.log(
+        `Watching for changes in: ${paths.map((p) => ` - ${p}`).join(`\n`)}`
+      );
 
       chokidar(paths, {
         ignoreInitial: true,
