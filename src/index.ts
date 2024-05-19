@@ -205,9 +205,11 @@ class ServerlessMake {
 
     const command = ["make", "-f", makefile, target];
 
-    this.log.log(`Making "${target}"...`);
+    this.log.verbose(`Making "${target}"...`);
 
     await exec(command, workdir, this.environment);
+
+    this.log.log(`Made "${target}"...`);
 
     return { makefile };
   };
@@ -223,7 +225,7 @@ class ServerlessMake {
         ),
       ];
 
-      this.log.log(
+      this.log.verbose(
         `Watching for changes in:\n${paths.map((p) => ` - ${p}`).join(`\n`)}`
       );
 
@@ -246,9 +248,6 @@ class ServerlessMake {
         }
       });
     }
-
-    // TODO: emit an event to the serverless framework
-    this.log.log("Build complete");
   };
 }
 
