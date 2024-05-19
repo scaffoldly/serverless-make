@@ -137,7 +137,9 @@ class ServerlessMake {
     this.log = new Log(options);
 
     this.commands = {
-      [PLUGIN_NAME]: {},
+      [PLUGIN_NAME]: {
+        lifecycleEvents: [this.target],
+      },
     };
 
     this.hooks = this.setupHooks();
@@ -151,9 +153,18 @@ class ServerlessMake {
     };
   }
 
+  get target(): string {
+    return this.pluginConfig.target || "";
+  }
+
+  get afterTarget(): string {
+    return `after:make${this.target ? `:${this.target}` : ""}`;
+  }
+
   setupHooks = () => {
     const hooks: Hooks = {
       initialize: async () => {},
+      [this.afterTarget]: async () => {},
       "before:offline:start": async () => {
         this.log.verbose("before:offline:start");
         let errored = false;
@@ -192,7 +203,7 @@ class ServerlessMake {
     const pluginHooks = this.pluginConfig.hooks || {};
 
     Object.entries(pluginHooks).forEach(([hook, target]) => {
-      if (hooks[hook]) {
+      if (hooks[hook] && hook !== this.afterTarget) {
         this.log.warning(
           `Unable to override registered internal hook "${hook}"!`
         );
@@ -226,7 +237,7 @@ class ServerlessMake {
   };
 
   build = async (watch?: boolean): Promise<void> => {
-    const { makefile } = await this.make(this.pluginConfig.target || "");
+    const { makefile } = await this.make(this.target);
 
     if (watch) {
       const paths = [
@@ -260,7 +271,13 @@ class ServerlessMake {
       });
     }
 
-    await this.serverless.pluginManager.spawn("after:make");
+    try {
+      await this.serverless.pluginManager.spawn(this.afterTarget);
+    } catch (e) {
+      if (e instanceof Error) {
+        this.log.warning(`Unable to spawn ${this.afterTarget}`);
+      }
+    }
   };
 }
 
