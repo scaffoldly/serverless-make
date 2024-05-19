@@ -113,6 +113,7 @@ type Hooks = {
 type Commands = {
   [key: string]: {
     lifecycleEvents?: string[];
+    type?: string;
   };
 };
 
@@ -138,7 +139,8 @@ class ServerlessMake {
 
     this.commands = {
       [PLUGIN_NAME]: {
-        lifecycleEvents: [this.target],
+        lifecycleEvents: ["made"],
+        type: "entrypoint",
       },
     };
 
@@ -157,14 +159,12 @@ class ServerlessMake {
     return this.pluginConfig.target || "";
   }
 
-  get afterTarget(): string {
-    return `after:make${this.target ? `:${this.target}` : ""}`;
-  }
-
   setupHooks = () => {
     const hooks: Hooks = {
       initialize: async () => {},
-      [this.afterTarget]: async () => {},
+      [`${PLUGIN_NAME}:made`]: async () => {
+        this.log.verbose(`!!! ${PLUGIN_NAME}:made`);
+      },
       "before:offline:start": async () => {
         this.log.verbose("before:offline:start");
         let errored = false;
@@ -203,7 +203,7 @@ class ServerlessMake {
     const pluginHooks = this.pluginConfig.hooks || {};
 
     Object.entries(pluginHooks).forEach(([hook, target]) => {
-      if (hooks[hook] && hook !== this.afterTarget) {
+      if (hooks[hook] && hook !== `${PLUGIN_NAME}:made`) {
         this.log.warning(
           `Unable to override registered internal hook "${hook}"!`
         );
@@ -271,11 +271,12 @@ class ServerlessMake {
       });
     }
 
+    const spawn = `${PLUGIN_NAME}:made`;
     try {
-      await this.serverless.pluginManager.spawn(this.afterTarget);
+      await this.serverless.pluginManager.spawn(`${PLUGIN_NAME}:made`);
     } catch (e) {
       if (e instanceof Error) {
-        this.log.warning(`Unable to spawn ${this.afterTarget}`);
+        this.log.warning(`Unable to spawn ${spawn}`);
       }
     }
   };
