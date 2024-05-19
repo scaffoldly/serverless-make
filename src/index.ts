@@ -209,7 +209,7 @@ class ServerlessMake {
 
     await exec(command, workdir, this.environment);
 
-    this.log.log(`Made "${target}"...`);
+    this.log.log(`Made "${target}"!`);
 
     return { makefile };
   };
