@@ -1,7 +1,12 @@
 import proc from "child_process";
 import which from "which";
 
-export const exec = (argv: string[], workdir: string): Promise<void> => {
+export const exec = (
+  argv: string[],
+  workdir: string,
+  log: (msg: string) => void,
+  callback: () => void
+): Promise<void> => {
   return new Promise((resolve, reject) => {
     const env = {
       ...process.env,
@@ -16,6 +21,8 @@ export const exec = (argv: string[], workdir: string): Promise<void> => {
       );
       return;
     }
+
+    log(`Running command (in ${workdir}): ${argv.join(" ")}`);
 
     const p = proc.spawn(command, argv.slice(1), {
       shell: true,
@@ -32,6 +39,7 @@ export const exec = (argv: string[], workdir: string): Promise<void> => {
         reject(new Error(`Command ${argv[0]} exited with code ${code}`));
         return;
       }
+      callback();
       resolve();
     });
 

@@ -2,6 +2,7 @@ import "path";
 import { exit } from "process";
 import { exec } from "./exec";
 import path from "path";
+import nodeWatch from "node-watch";
 
 type PluginName = "make";
 const PLUGIN_NAME: PluginName = "make";
@@ -10,6 +11,7 @@ type PluginConfig = {
   target?: string; // Default is "", which will run "_PHONY" target
   makefile?: string; // Default is "./Makefile"
   reloadHandler?: boolean; // Default is false
+  watch?: string[]; // Default is []
 };
 
 type ServerlessCustom = {
@@ -121,9 +123,8 @@ class ServerlessMake {
         this.log.verbose("before:offline:start");
         let errored = false;
         try {
-          await this.build(this.pluginConfig.reloadHandler || false);
+          await this.build(this.pluginConfig.reloadHandler);
         } catch (e) {
-          console.log("!!! we errored!!!");
           errored = true;
           if (e instanceof Error) {
             this.log.error(e.message);
@@ -154,7 +155,7 @@ class ServerlessMake {
     };
   }
 
-  build = async (_watch: boolean): Promise<void> => {
+  build = async (watch?: boolean): Promise<void> => {
     const makefile = path.join(
       this.serverlessConfig.servicePath,
       this.pluginConfig.makefile || "./Makefile"
@@ -163,10 +164,27 @@ class ServerlessMake {
     const target = this.pluginConfig.target || "";
 
     const command = ["make", "-f", makefile, target];
-    this.log.verbose(`Running command (in ${workdir}): ${command.join(" ")}`);
+
+    const postExec = () => {
+      this.log.verbose("Makefile completed");
+    };
 
     // TODO: pull in envrionment variables from serverless.yml
-    await exec(command, workdir);
+    await exec(command, workdir, this.log.verbose, postExec);
+
+    if (watch) {
+      const paths = [
+        ...[makefile],
+        ...(this.pluginConfig.watch || []).map((p) =>
+          path.join(this.serverlessConfig.servicePath, p)
+        ),
+      ];
+      this.log.log(`Watching for changes in: ${paths.map((p) => ` - ${p}\n`)}`);
+      nodeWatch(paths, { recursive: true }, async () => {
+        this.log.log("Change detected, rebuilding...");
+        await exec(command, workdir, this.log.verbose, postExec);
+      });
+    }
   };
 }
 
