@@ -183,7 +183,7 @@ class ServerlessMake {
         ignoreInitial: true,
         usePolling: true,
         interval: 100,
-        atomic: true,
+        atomic: 1000,
       }).on("all", async () => {
         this.log.log("Change detected, rebuilding...");
         try {
@@ -197,7 +197,7 @@ class ServerlessMake {
     }
 
     // TODO: emit an event to the serverless framework
-    this.log.verbose("Build complete");
+    this.log.log("Build complete");
   };
 }
 
