@@ -4,8 +4,7 @@ import which from "which";
 export const exec = (
   argv: string[],
   workdir: string,
-  log: (msg: string) => void,
-  callback: () => void
+  log: (msg: string) => void
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
     const env = {
@@ -39,7 +38,6 @@ export const exec = (
         reject(new Error(`Command ${argv[0]} exited with code ${code}`));
         return;
       }
-      callback();
       resolve();
     });
 

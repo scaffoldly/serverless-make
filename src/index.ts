@@ -165,13 +165,8 @@ class ServerlessMake {
 
     const command = ["make", "-f", makefile, target];
 
-    const postExec = () => {
-      // TODO Emit event for other plugins to hook into
-      this.log.verbose("Makefile completed");
-    };
-
     // TODO: pull in envrionment variables from serverless.yml
-    await exec(command, workdir, this.log.verbose, postExec);
+    await exec(command, workdir, this.log.verbose);
 
     if (watch) {
       const paths = [
@@ -188,6 +183,7 @@ class ServerlessMake {
         ignoreInitial: true,
         usePolling: true,
         interval: 100,
+        atomic: true,
       }).on("all", async () => {
         this.log.log("Change detected, rebuilding...");
         try {
@@ -199,6 +195,9 @@ class ServerlessMake {
         }
       });
     }
+
+    // TODO: emit an event to the serverless framework
+    this.log.verbose("Build complete");
   };
 }
 
