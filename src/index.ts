@@ -111,10 +111,12 @@ type Hooks = {
 };
 
 type Commands = {
-  [key: string]: {
-    lifecycleEvents?: string[];
-    type?: string;
-  };
+  [key: string]:
+    | Commands
+    | {
+        lifecycleEvents?: string[];
+        type?: string;
+      };
 };
 
 class ServerlessMake {
@@ -139,8 +141,10 @@ class ServerlessMake {
 
     this.commands = {
       [PLUGIN_NAME]: {
-        lifecycleEvents: ["made"],
-        type: "entrypoint",
+        made: {
+          lifecycleEvents: [this.target || "_PHONY"],
+          type: "entrypoint",
+        },
       },
     };
 
@@ -162,8 +166,8 @@ class ServerlessMake {
   setupHooks = () => {
     const hooks: Hooks = {
       initialize: async () => {},
-      [`${PLUGIN_NAME}:made`]: async () => {
-        this.log.verbose(`!!! ${PLUGIN_NAME}:made`);
+      [`${PLUGIN_NAME}:made:${this.target || "_PHONY"}`]: async () => {
+        this.log.verbose(`!!! ${PLUGIN_NAME}:made:${this.target || "_PHONY"}`);
       },
       "before:offline:start": async () => {
         this.log.verbose("before:offline:start");
