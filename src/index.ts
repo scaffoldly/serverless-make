@@ -123,6 +123,7 @@ class ServerlessMake {
         try {
           await this.build(this.pluginConfig.reloadHandler || false);
         } catch (e) {
+          console.log("!!! we errored!!!");
           errored = true;
           if (e instanceof Error) {
             this.log.error(e.message);
@@ -164,6 +165,7 @@ class ServerlessMake {
     const command = ["make", "-f", makefile, target];
     this.log.verbose(`Running command (in ${workdir}): ${command.join(" ")}`);
 
+    // TODO: pull in envrionment variables from serverless.yml
     await exec(command, workdir);
   };
 }
