@@ -1,12 +1,12 @@
 import proc from "child_process";
 import which from "which";
 
-export const exec = (argv: string[], workdir: string): Promise<void> => {
+export const exec = (
+  argv: string[],
+  workdir: string,
+  env: { [key: string]: string | undefined }
+): Promise<void> => {
   return new Promise((resolve, reject) => {
-    const env = {
-      ...process.env,
-    };
-
     console.log("!!!! env", JSON.stringify(env));
 
     let command: string;

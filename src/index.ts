@@ -26,7 +26,7 @@ type ServerlessService = {
   custom?: ServerlessCustom;
   provider: {
     stage: string;
-    environment?: { [key: string]: string | { Ref?: string } };
+    environment?: { [key: string]: string };
   };
   getAllFunctions: () => string[];
   getFunction: (functionName: string) => {
@@ -155,6 +155,14 @@ class ServerlessMake {
     };
   }
 
+  get environment(): { [key: string]: string | undefined } {
+    return {
+      ...(process.env || {}),
+      ...((((this.serverless || {}).service || {}).provider || {})
+        .environment || {}),
+    };
+  }
+
   build = async (watch?: boolean): Promise<void> => {
     const makefile = path.join(
       this.serverlessConfig.servicePath,
@@ -168,7 +176,7 @@ class ServerlessMake {
     this.log.verbose(`Running command (in ${workdir}): ${command.join(" ")}`);
 
     // TODO: pull in envrionment variables from serverless.yml
-    await exec(command, workdir);
+    await exec(command, workdir, this.environment);
 
     if (watch) {
       const paths = [
