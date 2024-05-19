@@ -166,7 +166,7 @@ class ServerlessMake {
     const command = ["make", "-f", makefile, target];
 
     // TODO: pull in envrionment variables from serverless.yml
-    await exec(command, workdir, this.log.verbose);
+    await exec(command, workdir, this.log.verbose.bind(this));
 
     if (watch) {
       const paths = [
