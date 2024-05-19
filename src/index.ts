@@ -111,8 +111,6 @@ class ServerlessMake {
   };
 
   constructor(serverless: Serverless, protected options: Options) {
-    console.log("!!! serverless", serverless);
-
     this.serverless = serverless;
     this.serverlessConfig = serverless.config;
     this.pluginConfig =
@@ -158,6 +156,8 @@ class ServerlessMake {
         }
       },
     };
+
+    this.setupHooks();
   }
 
   get environment(): { [key: string]: string | undefined } {
@@ -168,20 +168,35 @@ class ServerlessMake {
     };
   }
 
-  build = async (watch?: boolean): Promise<void> => {
+  setupHooks = () => {
+    const hooks = this.pluginConfig.hooks || {};
+
+    Object.entries(hooks).forEach(([hook, target]) => {
+      this.hooks[hook] = async () => {
+        console.log("!!! received hook", hook);
+        await this.make(target);
+      };
+    });
+  };
+
+  make = async (target: string): Promise<{ makefile: string }> => {
     const makefile = path.join(
       this.serverlessConfig.servicePath,
       this.pluginConfig.makefile || "./Makefile"
     );
     const workdir = path.dirname(makefile);
-    const target = this.pluginConfig.target || "";
 
     const command = ["make", "-f", makefile, target];
 
-    this.log.verbose(`Running command (in ${workdir}): ${command.join(" ")}`);
+    this.log.verbose(`make ${target}`);
 
-    // TODO: pull in envrionment variables from serverless.yml
     await exec(command, workdir, this.environment);
+
+    return { makefile };
+  };
+
+  build = async (watch?: boolean): Promise<void> => {
+    const { makefile } = await this.make(this.pluginConfig.target || "");
 
     if (watch) {
       const paths = [
