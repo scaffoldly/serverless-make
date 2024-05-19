@@ -3,7 +3,6 @@ import { exit } from "process";
 import { exec } from "./exec";
 import path from "path";
 import { watch as chokidar } from "chokidar";
-import { FSWatcher } from "fs";
 
 type PluginName = "make";
 const PLUGIN_NAME: PluginName = "make";
