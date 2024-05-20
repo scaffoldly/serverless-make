@@ -142,13 +142,6 @@ class ServerlessMake {
 
     this.log = new Log(options);
 
-    // const commandOptions = {
-    //   // "skip-hooks": {
-    //   //   usage: "Skip invocation of all lifecycle hooks",
-    //   //   type: "boolean",
-    //   // },
-    // };
-
     this.hooks = this.setupHooks();
 
     this.commands = {
@@ -156,12 +149,10 @@ class ServerlessMake {
         commands: {
           [`${this.target}`]: {
             lifecycleEvents: [],
-            // options: commandOptions,
             usage: `Runs \`make ${this.target}\`.`,
           },
         },
         lifecycleEvents: [this.target],
-        // options: commandOptions,
         usage: "Runs make commands",
       },
     };
@@ -187,10 +178,10 @@ class ServerlessMake {
         await this.build(false);
       },
       [`before:${PLUGIN_NAME}:${this.target}`]: async () => {
-        console.log(`!!!! before:${PLUGIN_NAME}:${this.target}`);
+        this.log.verbose(`before:${PLUGIN_NAME}:${this.target}`);
       },
       [`after:${PLUGIN_NAME}:${this.target}`]: async () => {
-        console.log(`!!!! after:${PLUGIN_NAME}:${this.target}`);
+        this.log.verbose(`after:${PLUGIN_NAME}:${this.target}`);
       },
       "before:offline:start": async () => {
         this.log.verbose("before:offline:start");
