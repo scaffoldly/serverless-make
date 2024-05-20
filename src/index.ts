@@ -155,7 +155,7 @@ class ServerlessMake {
       [`${PLUGIN_NAME}`]: {
         commands: {
           [`${this.target}`]: {
-            lifecycleEvents: ["making", "made"],
+            lifecycleEvents: [],
             // options: commandOptions,
             usage: `Runs \`make ${this.target}\`.`,
           },
