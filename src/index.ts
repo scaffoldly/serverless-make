@@ -110,6 +110,18 @@ type Hooks = {
   [key: string]: () => Promise<void>;
 };
 
+type CommandOptions = { [key: string]: { usage: string; type: string } };
+
+type Commands = {
+  [key: string]:
+    | Commands
+    | {
+        usage: string;
+        lifecycleEvents: string[];
+        options?: CommandOptions;
+      };
+};
+
 class ServerlessMake {
   log: Log;
 
@@ -118,6 +130,7 @@ class ServerlessMake {
   pluginConfig: PluginConfig;
 
   hooks?: Hooks;
+  commands?: Commands;
 
   constructor(serverless: Serverless, protected options: Options) {
     this.serverless = serverless;
@@ -129,7 +142,28 @@ class ServerlessMake {
 
     this.log = new Log(options);
 
+    // const commandOptions = {
+    //   // "skip-hooks": {
+    //   //   usage: "Skip invocation of all lifecycle hooks",
+    //   //   type: "boolean",
+    //   // },
+    // };
+
     this.hooks = this.setupHooks();
+    this.commands = {
+      [`${PLUGIN_NAME}`]: {
+        commands: {
+          make: {
+            lifecycleEvents: ["making", "made"],
+            // options: commandOptions,
+            usage: "Runs the specified target in the Makefile.",
+          },
+        },
+        lifecycleEvents: ["make"],
+        // options: commandOptions,
+        usage: "Runs make commands",
+      },
+    };
   }
 
   get environment(): { [key: string]: string | undefined } {
@@ -219,6 +253,11 @@ class ServerlessMake {
   };
 
   build = async (watch?: boolean): Promise<void> => {
+    console.log(
+      "!!! hooks",
+      Object.keys(this.serverless.pluginManager.hooks || {}).join(", ")
+    );
+
     const { makefile } = await this.make(this.target);
 
     if (watch) {
