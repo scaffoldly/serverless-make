@@ -153,13 +153,13 @@ class ServerlessMake {
     this.commands = {
       [`${PLUGIN_NAME}`]: {
         commands: {
-          make: {
+          [`${this.target}`]: {
             lifecycleEvents: ["making", "made"],
             // options: commandOptions,
             usage: "Runs the specified target in the Makefile.",
           },
         },
-        lifecycleEvents: ["make"],
+        lifecycleEvents: [this.target],
         // options: commandOptions,
         usage: "Runs make commands",
       },
