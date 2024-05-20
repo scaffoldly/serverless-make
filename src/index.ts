@@ -150,13 +150,14 @@ class ServerlessMake {
     // };
 
     this.hooks = this.setupHooks();
+
     this.commands = {
       [`${PLUGIN_NAME}`]: {
         commands: {
           [`${this.target}`]: {
             lifecycleEvents: ["making", "made"],
             // options: commandOptions,
-            usage: "Runs the specified target in the Makefile.",
+            usage: `Runs \`make ${this.target}\`.`,
           },
         },
         lifecycleEvents: [this.target],
@@ -181,6 +182,10 @@ class ServerlessMake {
   setupHooks = () => {
     const hooks: Hooks = {
       initialize: async () => {},
+      [`${PLUGIN_NAME}:${this.target}`]: async () => {
+        this.log.verbose(`${PLUGIN_NAME}:${this.target}`);
+        await this.build(false);
+      },
       "before:offline:start": async () => {
         this.log.verbose("before:offline:start");
         let errored = false;
