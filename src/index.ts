@@ -186,11 +186,11 @@ class ServerlessMake {
         this.log.verbose(`${PLUGIN_NAME}:${this.target}`);
         await this.build(false);
       },
-      [`${PLUGIN_NAME}:${this.target}:making`]: async () => {
-        this.log.log(`${PLUGIN_NAME}:${this.target}:making`);
+      [`before:${PLUGIN_NAME}:${this.target}`]: async () => {
+        console.log(`!!!! before:${PLUGIN_NAME}:${this.target}`);
       },
-      [`${PLUGIN_NAME}:${this.target}:made`]: async () => {
-        this.log.log(`${PLUGIN_NAME}:${this.target}:made`);
+      [`after:${PLUGIN_NAME}:${this.target}`]: async () => {
+        console.log(`!!!! after:${PLUGIN_NAME}:${this.target}`);
       },
       "before:offline:start": async () => {
         this.log.verbose("before:offline:start");
@@ -264,9 +264,6 @@ class ServerlessMake {
   };
 
   build = async (watch?: boolean): Promise<void> => {
-    await this.serverless.pluginManager.spawn(
-      `${PLUGIN_NAME}:${this.target}:making`
-    );
     console.log(
       "!!! hooks",
       Object.keys(this.serverless.pluginManager.hooks || {}).join(", ")
@@ -305,10 +302,6 @@ class ServerlessMake {
         }
       });
     }
-
-    await this.serverless.pluginManager.spawn(
-      `${PLUGIN_NAME}:${this.target}:made`
-    );
   };
 }
 
