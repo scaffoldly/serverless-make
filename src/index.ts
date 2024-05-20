@@ -230,9 +230,9 @@ class ServerlessMake {
     const pluginHooks = this.pluginConfig.hooks || {};
 
     Object.entries(pluginHooks).forEach(([hook, target]) => {
-      if (hooks[hook]) {
+      if (hook === `${PLUGIN_NAME}:${this.target}`) {
         this.log.warning(
-          `Unable to override registered internal hook "${hook}"!`
+          `Hook "${hook}" is reserved for the "${PLUGIN_NAME}" plugin. Use \`before:${PLUGIN_NAME}:${this.target}\` or \`after:${PLUGIN_NAME}:${this.target}\` instead.`
         );
         return;
       }
