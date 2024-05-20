@@ -255,11 +255,6 @@ class ServerlessMake {
   };
 
   build = async (watch?: boolean): Promise<void> => {
-    console.log(
-      "!!! hooks",
-      Object.keys(this.serverless.pluginManager.hooks || {}).join(", ")
-    );
-
     const { makefile } = await this.make(this.target);
 
     if (watch) {
